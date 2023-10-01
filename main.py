@@ -2,38 +2,6 @@ import requests
 from request_data import PostRequest
 
 
-def fetch_groups(groupids, json_respone):
-    groups = json_respone.get("r").get("dbiAccessorRes").get("tables")[12].get("data_rows")
-    groups_list = []
-    for group_id in groupids:
-        for group in groups:
-            if group['id'] == group_id:
-                firstname = group.get("name")
-                groups_list.append(firstname)
-    return groups_list
-
-
-def fetch_teachers(teacher_ids, json_respone):
-    teachers = json_respone.get("r").get("dbiAccessorRes").get("tables")[14].get("data_rows")
-    teachers_dict = []
-    for teacher_id in teacher_ids:
-        for teacher in teachers:
-            if teacher['id'] == teacher_id:
-                firstname = teacher.get("firstname")
-                lastname = teacher.get("lastname")
-                teachers_dict.append(lastname)
-    return teachers_dict
-
-
-def fetch_subject(subject_id, json_respone):
-    subjects = json_respone.get("r").get("dbiAccessorRes").get("tables")[13].get("data_rows")
-
-    for subject in subjects:
-        if subject['id'] == subject_id:
-            subject_name = subject.get("name")
-            return subject_name
-
-
 def action(user_group):
     url = 'https://ttpu.edupage.org/timetable/server/regulartt.js?__func=regularttGetData'
     post_data = PostRequest()
