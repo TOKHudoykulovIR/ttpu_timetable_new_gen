@@ -8,13 +8,6 @@ def action(user_group):
 
     json_respone = requests.post(url, headers=post_data.headers, json=post_data.payload).json()
 
-    # p = json_respone.get("r").get("dbiAccessorRes").get("tables")[1].get("data_rows")
-    # for o in p:
-    #     period = o.get("name")
-    #     starttime = o.get("starttime")
-    #     endtime = o.get("endtime")
-    #     # print(f"{period}:  {starttime} - {endtime}")
-
     rooms_data = json_respone.get("r").get("dbiAccessorRes").get("tables")[11].get("data_rows")
     cards_data = json_respone.get("r").get("dbiAccessorRes").get("tables")[20].get("data_rows")
     groups_data = json_respone.get("r").get("dbiAccessorRes").get("tables")[12].get("data_rows")
@@ -35,37 +28,25 @@ def action(user_group):
     user_group_lessons_detailed = {}
 
     for lesson in user_group_lessons:
-        # room_names = []
-        # rooms = lesson.get("classroomidss")
-        # print(lesson.get("id"))
-        # print(rooms)
-        # for room_data in rooms_data:
-        #     if room_data["id"] in rooms:
-        #         room_names.append(room_data.get("name"))
+        subject_name = None
+        subject_short = None
+        subject_color = None
 
         for subject_data in subjects_data:
             if subject_data["id"] == lesson["subjectid"]:
                 subject_name = subject_data["name"]
                 subject_short = subject_data["short"]
                 subject_color = subject_data["color"]
-
-                # user_group_lessons_detailed[lesson["id"]] = {
-                #     "subject_id": lesson["subjectid"],
-                #     "subject_name": subject_data["name"],
-                #     "subject_short": subject_data["short"],
-                #     "subject_color": subject_data["color"],
-                #     "cards": []
-                # }
                 break
 
-        user_group_lessons_detailed[lesson["id"]] = {
-            "subject_id": lesson["subjectid"],
-            "subject_name": subject_name,
-            "subject_short": subject_short,
-            "subject_color": subject_color,
-            # "rooms": room_names,
-            "cards": []
-        }
+        if subject_name:
+            user_group_lessons_detailed[lesson["id"]] = {
+                "subject_id": lesson["subjectid"],
+                "subject_name": subject_name,
+                "subject_short": subject_short,
+                "subject_color": subject_color,
+                "cards": []
+            }
 
     for card_data in cards_data:
         lesson_id = card_data["lessonid"]
@@ -93,7 +74,6 @@ def action(user_group):
 
             if card:
                 rooms = card_data["classroomids"]
-                # print(rooms)
                 if rooms:
                     room_names = []
                     for room_data in rooms_data:
@@ -121,4 +101,4 @@ def action(user_group):
 
 
 if __name__ == '__main__':
-    action(user_group="G1")
+    action(user_group="IT4-20")
