@@ -1,6 +1,7 @@
 import requests
 from request_data import PostRequest
-
+import pandas as pd
+import dataframe_image as dfi
 
 def action(user_group):
     url = 'https://ttpu.edupage.org/timetable/server/regulartt.js?__func=regularttGetData'
@@ -85,6 +86,16 @@ def action(user_group):
                 cards = lesson_data["cards"]
                 cards.append(card)
 
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    lesson_numbers = list(range(1, 7))  # Assuming 6 lessons per day
+    timetable_df = pd.DataFrame(columns=lesson_numbers, index=days_of_week)
+    for day in days_of_week:
+        for lesson in lesson_numbers:
+            # Get the lesson details (you can replace this with your own data source)
+            lesson_details = "..."
+            # Fill in the DataFrame
+            timetable_df.at[day, lesson] = lesson_details
+
     for lesson in user_group_lessons_detailed:
         current_lesson_data = user_group_lessons_detailed.get(lesson)
         subject_name = current_lesson_data.get("subject_name")
@@ -92,13 +103,30 @@ def action(user_group):
 
         if bool(reserved_card):
             for card in reserved_card:
-                print(subject_name)
-                print(current_lesson_data.get("subject_short"))
-                print(card.get("rooms"))
-                print(card.get("day"))
-                print(card.get("period"))
-                print()
+                # print(subject_name)
+                # print(current_lesson_data.get("subject_short"))
+                # print(current_lesson_data.get("subject_color"))
+                # print(card.get("rooms"))
+                # print(card.get("day"))
+                # print(card.get("period"))
+                # print()
+                rooms = ', '.join(map(str, card.get("rooms")))
+                timetable_df.at[card.get("day"), int(card.get("period"))] = f'{current_lesson_data.get("subject_short")}<br>{rooms}<br>{current_lesson_data.get("subject_color")}'
+
+    timetable_df.to_csv("new.csv")
+
+
+    def style_cells(val):
+        if val == "...":
+            col = "white"
+        else:
+            col = val.split("<br>")[2]
+        return f'background-color: {col}'
+
+    # ss = timetable_df.style.map(style_cells)
+
+    dfi.export(timetable_df.style.map(style_cells), "mytable.png", table_conversion="matplotlib")
 
 
 if __name__ == '__main__':
-    action(user_group="IT4-20")
+    action(user_group="G4")
