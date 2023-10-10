@@ -3,6 +3,7 @@ from request_data import PostRequest
 import pandas as pd
 import dataframe_image as dfi
 
+
 def action(user_group):
     url = 'https://ttpu.edupage.org/timetable/server/regulartt.js?__func=regularttGetData'
     post_data = PostRequest()
@@ -88,7 +89,10 @@ def action(user_group):
 
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     lesson_numbers = list(range(1, 7))  # Assuming 6 lessons per day
-    timetable_df = pd.DataFrame(columns=lesson_numbers, index=days_of_week)
+    timetable_df = pd.DataFrame(
+        columns=pd.MultiIndex.from_arrays([[1, 2, 3, 4, 5, 6], ["8:30-9:50  ", "10:00-11:20  ", "11:30-12:50", "13:50-15:10", "15:20-16:40", "18:20-19:40"]]),
+        index=days_of_week
+    )
     for day in days_of_week:
         for lesson in lesson_numbers:
             # Get the lesson details (you can replace this with your own data source)
@@ -111,22 +115,38 @@ def action(user_group):
                 # print(card.get("period"))
                 # print()
                 rooms = ', '.join(map(str, card.get("rooms")))
-                timetable_df.at[card.get("day"), int(card.get("period"))] = f'{current_lesson_data.get("subject_short")}<br>{rooms}<br>{current_lesson_data.get("subject_color")}'
+                timetable_df.at[card.get("day"), int(
+                    card.get("period"))] = f'<b>{current_lesson_data.get("subject_short")}</b><br><p style="font-size: 70%;">{rooms}</p>'
 
     timetable_df.to_csv("new.csv")
 
+    import hashlib
+
+    def string_to_color(input_string):
+        hash_object = hashlib.md5(input_string.encode())
+        hash_hex = hash_object.hexdigest()
+        r = (int(hash_hex[0:2], 16) + 128) % 255
+        g = (int(hash_hex[2:4], 16) + 128) % 255
+        b = (int(hash_hex[4:6], 16) + 128) % 255
+        color_string = f"rgb({r}, {g}, {b})"
+        return color_string
 
     def style_cells(val):
         if val == "...":
-            col = "white"
+            b_col = "white"
+            f_col = "white"
         else:
-            col = val.split("<br>")[2]
-        return f'background-color: {col}'
+            b_col = string_to_color(val.split("<br>")[0])
+            f_col = "black"
+        return f'background-color: {b_col}; color: {f_col}'
 
-    # ss = timetable_df.style.map(style_cells)
+    styler = timetable_df.style
+    df = styler.map(style_cells)
 
-    dfi.export(timetable_df.style.map(style_cells), "mytable.png", table_conversion="matplotlib")
+    df = df.set_properties(**{'border-color': 'black', 'border-width': '1px', 'border-style': 'solid'})
+
+    dfi.export(df, "mytable.png")
 
 
 if __name__ == '__main__':
-    action(user_group="G4")
+    action(user_group="IT4-20")
